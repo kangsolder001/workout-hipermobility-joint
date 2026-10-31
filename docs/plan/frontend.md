@@ -1,7 +1,7 @@
-# Plan — Frontend (React + TypeScript + Vite + Tailwind + PWA)
+# Plan — Frontend (SvelteKit + Svelte 5 + TypeScript + Tailwind + PWA)
 
 Baca dulu `docs/plan/README.md` (aturan main & DoD global).
-Rujukan spec: `docs/spec_workout.md` v1.2 — terutama §8 (fitur),
+Rujukan spec: `docs/spec_workout.md` v1.3 — terutama §8 (fitur),
 §9 (user flow), §10 (layar), §14 (NFR).
 
 Bahasa UI: **Indonesia**. Nama latihan: Inggris + alias Indonesia
@@ -13,12 +13,16 @@ Bahasa UI: **Indonesia**. Nama latihan: Inggris + alias Indonesia
 
 **Spec:** §13 (Frontend), §14 Usability/Accessibility
 
-**Scope:** `frontend/` (Vite, Tailwind, React Router, TanStack Query,
+**Scope:** `frontend/` (SvelteKit + `adapter-static`, Vite, Tailwind,
 Zod, PWA), `frontend/public/`
 
 **Kerjakan:**
-- Vite + React + TS + Tailwind + React Router + TanStack Query + Zod.
-- PWA: manifest + service worker (vite-plugin-pwa) — minimal cache shell.
+- SvelteKit + Svelte 5 (runes) + TS + Tailwind + Zod; build sebagai SPA
+  statis lewat `adapter-static` (hasil build berupa folder statis).
+- Routing berbasis file (`src/routes/**/+page.svelte`) — tanpa router
+  pihak ketiga.
+- PWA: manifest + service worker (`@vite-pwa/sveltekit` atau
+  `vite-plugin-pwa`) — minimal cache shell.
 - Komponen dasar tombol besar, timer, kartu latihan, kontras memadai;
   navigasi keyboard + label untuk kontrol (§14 Accessibility).
 - Struktur folder sesuai `docs/plan/README.md` §2.
@@ -27,9 +31,12 @@ Zod, PWA), `frontend/public/`
   yang menyediakan base URL via `/api/v1/config` bila perlu).
 
 **Acceptance:**
-- [ ] `npm run dev` + `npm run build` sukses; `npm run lint` hijau.
+- [ ] `npm run dev` + `npm run build` sukses (build `adapter-static`
+      menghasilkan folder `build/` tanpa error); `npm run lint` hijau.
 - [ ] Lighthouse PWA minimal "installable"; tidak ada autoplay video.
 - [ ] Halaman bisa dinavigasi keyboard; teks tetap terbaca pada zoom 200%.
+- [ ] Tidak ada dependensi React / router pihak ketiga / library data
+      pihak ketiga di `package.json`.
 
 **Depends:** —
 
@@ -37,16 +44,19 @@ Zod, PWA), `frontend/public/`
 
 ## F02 — API client, tipe, dan error handling
 
-**Spec:** §12, §12.1, §13 (Zod, TanStack Query)
+**Spec:** §12, §12.1, §13 (Zod, client fetch berbasis rune)
 
-**Scope:** `frontend/src/api/`
+**Scope:** `frontend/src/lib/api/`
 
 **Kerjakan:**
 - Client dari `backend/api/openapi.yaml` (codegen bila memungkinkan;
   jika tidak, tulis tangan tapi wajib sinkron).
 - Zod schema untuk request/response utama.
-- Wrapper TanStack Query: retry, error `code/message/details`, token
-  sesi, header `Idempotency-Key` untuk endpoint wajib.
+- Lapisan data: client `fetch` + cache sederhana berbasis rune
+  (`$state`/`$derived`) berupa helper `createQuery`/`createMutation`
+  yang mengurus retry, error `code/message/details`, token sesi, dan
+  header `Idempotency-Key` untuk endpoint wajib — **tanpa** TanStack
+  Query atau library data sejenis.
 - Penanganan 401 (kembali ke layar PIN) dan 423/429 (pesan lockout).
 
 **Acceptance:**
@@ -63,8 +73,8 @@ Zod, PWA), `frontend/public/`
 
 **Spec:** §10 (Onboarding, Unlock), §8.7, §11 `Auth`, §12 `/auth/*`
 
-**Scope:** `frontend/src/pages/{Onboarding,Unlock}.tsx`,
-`frontend/src/features/auth/`
+**Scope:** `frontend/src/routes/{onboarding,unlock}/+page.svelte`,
+`frontend/src/lib/features/auth/`
 
 **Kerjakan:**
 - Onboarding: penjelasan aplikasi, **disclaimer keselamatan**, pengaturan
@@ -85,8 +95,8 @@ Zod, PWA), `frontend/public/`
 
 **Spec:** §8.1, §10 (Profile)
 
-**Scope:** `frontend/src/pages/Profile.tsx`,
-`frontend/src/features/profile/`
+**Scope:** `frontend/src/routes/profile/+page.svelte`,
+`frontend/src/lib/features/profile/`
 
 **Kerjakan:** Lihat/edit profil, kondisi yang dilaporkan user (per area
 sendi + laterality), area sendi yang perlu diperhatikan, peralatan,
@@ -105,8 +115,9 @@ tujuan, hari/waktu/zona waktu. Validasi Zod + pesan error jelas.
 
 **Spec:** §8.2, §4, §10 (Dashboard, Weekly Schedule, Program Detail)
 
-**Scope:** `frontend/src/pages/{Dashboard,Schedule,Program}.tsx`,
-`frontend/src/features/schedule/`
+**Scope:** `frontend/src/routes/+page.svelte` (Dashboard),
+`frontend/src/routes/{schedule,program/[id]}/+page.svelte`,
+`frontend/src/lib/features/schedule/`
 
 **Kerjakan:**
 - Dashboard: sesi berikutnya, hari/jam, fase & minggu, durasi estimasi,
@@ -129,8 +140,8 @@ tujuan, hari/waktu/zona waktu. Validasi Zod + pesan error jelas.
 
 **Spec:** §6, §10 (Exercise Detail)
 
-**Scope:** `frontend/src/pages/Exercise.tsx`,
-`frontend/src/features/exercise/`
+**Scope:** `frontend/src/routes/exercises/[id]/+page.svelte`,
+`frontend/src/lib/features/exercise/`
 
 **Kerjakan:** Instruksi langkah demi langkah, target otot fungsional,
 dosis (set/reps/hold/rest), **cue keselamatan menonjol**, kesalahan
@@ -151,8 +162,8 @@ review konten, nama `name` + `name_id`.
 
 **Spec:** §8.3, §9, §14 Reliability
 
-**Scope:** `frontend/src/features/session/`,
-`frontend/src/pages/ActiveSession.tsx`
+**Scope:** `frontend/src/lib/features/session/`,
+`frontend/src/routes/session/[id]/+page.svelte`
 
 **Kerjakan:**
 - Satu latihan pada satu waktu: instruksi, media, target, dosis, cue.
@@ -178,7 +189,7 @@ review konten, nama `name` + `name_id`.
 **Spec:** §3.1, §3.2, §9, §8.4, §10 (Pre/Post-workout Check)
 
 **Scope:** `frontend/src/lib/safety/`,
-`frontend/src/pages/{PreCheck,PostCheck}.tsx`
+`frontend/src/routes/check/{pre,post}/+page.svelte`
 
 **Kerjakan:**
 - Pre-check: 6 pertanyaan ya/tidak; hasil tier diambil dari **payload
@@ -206,7 +217,7 @@ review konten, nama `name` + `name_id`.
 
 **Spec:** §8.5, §10 (History, Progress)
 
-**Scope:** `frontend/src/pages/{History,Progress}.tsx`
+**Scope:** `frontend/src/routes/{history,progress}/+page.svelte`
 
 **Kerjakan:** Kalender latihan, riwayat sesi + log (reps aktual, RPE),
 grafik konsistensi mingguan, perbandingan performa per latihan
@@ -228,8 +239,8 @@ ringkasan kondisi yang dilaporkan user, riwayat check-in + follow-up.
 **Spec:** §8.7, §12 (`/preferences`, `/notifications/*`, `/me/export`,
 `DELETE /me`)
 
-**Scope:** `frontend/src/pages/Settings.tsx`,
-`frontend/src/features/settings/`
+**Scope:** `frontend/src/routes/settings/+page.svelte`,
+`frontend/src/lib/features/settings/`
 
 **Kerjakan:**
 - Profil, jadwal, satuan/bahasa.

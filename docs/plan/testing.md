@@ -143,13 +143,15 @@ compose Postgres terpisah)
 
 ---
 
-## T06 — Unit test frontend (Vitest)
+## T06 — Unit test frontend (Vitest + @testing-library/svelte)
 
 **Spec:** §8, §13 (Offline), §15 butir 20
 
-**Scope:** `frontend/src/**/*.test.ts(x)`
+**Scope:** `frontend/src/**/*.test.ts`, `frontend/svelte.config.js`
 
 **Kerjakan:**
+- Render komponen dengan `@testing-library/svelte` (adapter `svelte/
+  testing`); tidak ada `@testing-library/react` di `package.json`.
 - Konsumsi payload safety rules → render tier yang benar per kasus
   (sample mewakili 4 tier, sisanya dicakup lewat test loop terhadap
   fixture yang sama dengan T01).
@@ -193,6 +195,8 @@ compose Postgres terpisah)
 **Acceptance:**
 - [ ] `npx playwright test` hijau di Chromium (mobile viewport) + desktop.
 - [ ] Tidak ada test yang butuh gateway WhatsApp sungguhan.
+- [ ] `webServer` Playwright menjalankan `npm run preview` (build
+      `adapter-static`), bukan dev server React.
 
 **Depends:** F03–F11, B04–B11
 

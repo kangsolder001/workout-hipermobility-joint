@@ -1,7 +1,7 @@
 # JointFit --- Software Specification
 
 **Dokumen:** `docs/spec_workout.md`\
-**Versi:** 1.2\
+**Versi:** 1.3\
 **Status:** Draft untuk MVP\
 **Bahasa:** Indonesia\
 **Produk:** Personal Strength & Joint Stability Training App\
@@ -12,6 +12,12 @@ Notification Service API v1.0.0
 keselamatan berstatus `pending_review` sampai ditinjau tenaga kesehatan.
 Program tidak boleh ditawarkan sebagai program aktif sebelum
 `clinical_review_status` menjadi `reviewed` (lihat §15 butir 14 dan §17).
+
+**Riwayat revisi v1.3:** frontend diubah dari React + React Router +
+TanStack Query menjadi **SvelteKit (Svelte 5) + routing berbasis file +
+client API `fetch` berbasis rune**. Zod tetap dipakai untuk validasi.
+Keputusan keselamatan (§3, §5.1, §6.5), data model (§11), API (§12), dan
+seluruh ketentuan backend tidak berubah.
 
 ------------------------------------------------------------------------
 
@@ -64,7 +70,8 @@ bila diubah melalui revisi dokumen ini:
   Parameter             Keputusan
   --------------------- ----------------------------------------------
   Platform              PWA (web responsif untuk desktop dan mobile)
-  Frontend              React + TypeScript + Vite
+  Frontend              SvelteKit (Svelte 5 + TypeScript) + Vite,
+                        dibangun statis via `adapter-static`
   Styling               Tailwind CSS
   Backend               Go
   HTTP router           Chi
@@ -972,12 +979,15 @@ masuk ke log (§12.1).
 
 ### Frontend
 
--   React
+-   Svelte 5 (runes) dengan SvelteKit, dibangun sebagai SPA statis
+    (`adapter-static`) agar tetap PWA dan dapat di-host sebagai berkas
+    statis
 -   TypeScript
 -   Vite
 -   Tailwind CSS
--   React Router
--   TanStack Query
+-   Routing berbasis file bawaan SvelteKit (tanpa router pihak ketiga)
+-   Client API berbasis `fetch` dengan cache sederhana berbasis rune
+    (`$state`/`$derived`), tanpa library data pihak ketiga
 -   Zod untuk validasi form
 -   PWA service worker untuk instalasi dan caching aset statis
 
@@ -1251,7 +1261,8 @@ jari, serta bilateral flat foot.
 
 ### Sudah diputuskan
 
-1.  Platform: PWA (React + TypeScript + Vite, Go + Chi, PostgreSQL).
+1.  Platform: PWA (SvelteKit/Svelte + TypeScript + Vite, Go + Chi,
+    PostgreSQL).
 2.  Penggunaan: personal/single-user/single-device; autentikasi PIN lokal
     (argon2id), unlock berlaku selama aplikasi terbuka, lockout 5 gagal →
     5 menit.

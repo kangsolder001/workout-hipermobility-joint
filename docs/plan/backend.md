@@ -1,7 +1,7 @@
 # Plan — Backend (Go + Chi + PostgreSQL)
 
 Baca dulu `docs/plan/README.md` (aturan main & DoD global).
-Rujukan spec: `docs/spec_workout.md` v1.2.
+Rujukan spec: `docs/spec_workout.md` v1.3.
 
 Stack tetap: Go, **Chi**, PostgreSQL, `goose` migrations, `pgx`,
 repository/service/handler, konfigurasi via **`config.json`**.

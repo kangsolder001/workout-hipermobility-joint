@@ -1,7 +1,7 @@
 # JointFit — Plan Pengembangan MVP
 
 Dokumen kerja untuk menjalankan implementasi lewat sub agent.
-Sumber kebenaran tetap **`docs/spec_workout.md` (v1.2)** — plan ini hanya
+Sumber kebenaran tetap **`docs/spec_workout.md` (v1.3)** — plan ini hanya
 memecahnya jadi unit kerja yang bisa dikerjakan terpisah.
 
 ## 1. Struktur dokumen plan
@@ -10,7 +10,7 @@ memecahnya jadi unit kerja yang bisa dikerjakan terpisah.
 |---|---|---|
 | `docs/plan/README.md` | Aturan main, konvensi, dependensi (file ini) | Semua |
 | `docs/plan/backend.md` | Task backend `B01`–`B14` (Go + Chi + PostgreSQL) | Sub agent backend |
-| `docs/plan/frontend.md` | Task frontend `F01`–`F11` (React + TS + Vite + PWA) | Sub agent frontend |
+| `docs/plan/frontend.md` | Task frontend `F01`–`F11` (SvelteKit + Svelte 5 + TS + Vite + PWA) | Sub agent frontend |
 | `docs/plan/testing.md` | Task testing `T01`–`T09` (unit, integration, E2E, a11y, security) | Sub agent QA/testing |
 | `docs/TODO.md` | Checklist gabungan semua task + dependensi + status | Koordinator / manusia |
 
@@ -19,7 +19,7 @@ memecahnya jadi unit kerja yang bisa dikerjakan terpisah.
 ```
 workout-hipermobility-joint/
 ├── docs/
-│   ├── spec_workout.md          # sumber kebenaran (v1.2)
+│   ├── spec_workout.md          # sumber kebenaran (v1.3)
 │   ├── reference/openapi.json   # kontrak gateway WhatsApp
 │   ├── plan/{README,backend,frontend,testing}.md
 │   └── TODO.md
@@ -36,10 +36,12 @@ workout-hipermobility-joint/
 │   ├── api/openapi.yaml         # kontrak API JointFit
 │   └── *_test.go
 ├── frontend/
-│   ├── src/api/                 # client + Zod schema
+│   ├── svelte.config.js         # adapter-static (build SPA PWA)
+│   ├── src/lib/api/             # client fetch + Zod schema
 │   ├── src/lib/safety/          # konsumsi tabel tier dari backend
+│   ├── src/lib/features/        # komponen per fitur
+│   ├── src/routes/              # routing berbasis file SvelteKit
 │   ├── src/runtime/offline/     # SW + IndexedDB queue + sync
-│   ├── src/features/, src/pages/
 │   └── tests: src/**/*.test.ts, e2e/*.spec.ts (Playwright)
 ├── config.example.json          # template konfigurasi (config.json di-gitignore)
 └── docker-compose.yml           # postgres + api + worker + wa-gateway
@@ -109,7 +111,7 @@ Kamu mengerjakan task <ID> dari rencana JointFit.
 
 1. Baca: docs/spec_workout.md bagian <daftar§>, docs/plan/<track>.md
    bagian <ID>, dan docs/plan/README.md (aturan main, wajib dipatuhi).
-2. Repo: /home/kangsolder/Documents/m2/code/workout-hipermobility-joint
+2. Repo: /home/myrpi/kgs-github/workout-hipermobility-joint
 3. Kerjakan hanya scope file yang tercantum pada task. Jangan menyentuh
    file di luar scope dan jangan mengubah spec.
 4. Penuhi seluruh Acceptance; jalankan test/format yang relevan.
